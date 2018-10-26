@@ -4,30 +4,34 @@ less     = require 'less'
 mkdirp   = require 'mkdirp'
 path     = require 'path'
 readline = require 'readline'
+{CompositeDisposable} = require 'atom'
 
 module.exports =
 class LessAutocompileView
   constructor: (serializeState) ->
-    atom.commands.add 'atom-workspace', 'core:save': => @handleSave()
+    @subscriptions = new CompositeDisposable
+    @subscriptions.add atom.workspace.observeTextEditors((editor) =>
+      filePath = editor.getURI()
+      fileExt = path.extname filePath
+      if fileExt is '.less'
+        editorSubscriptions = new CompositeDisposable
+        editorSubscriptions.add editor.onDidSave( =>
+          @handleSave filePath
+        )
+        editorSubscriptions.add editor.onDidDestroy( =>
+          editorSubscriptions.dispose()
+          @subscriptions.remove editorSubscriptions
+        )
+        @subscriptions.add editorSubscriptions
+    )
 
   serialize: ->
 
   destroy: ->
 
-  getExtension : (filePath) ->
-    if filePath
-      return path.extname(filePath).substr(1)
-
-  handleSave: ->
-    @activeEditor = atom.workspace.getActiveTextEditor()
-
-    if @activeEditor
-      @filePath = @activeEditor.getURI()
-      @fileExt = @getExtension(@filePath)
-
-      if @fileExt == 'less'
-        @getParams @filePath, (params) =>
-          @compileLess params
+  handleSave: (filePath) ->
+    @getParams filePath, (params) =>
+      @compileLess params
 
   writeFiles: (output, newPath, newFile) ->
     async.series
