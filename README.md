@@ -13,7 +13,7 @@ compress  (bool)   compress CSS file
 main      (string) path to your main LESS file to be compiled
 autoprefixer      (string) autoprefixer parameterers
 ```
-Check (this)[https://github.com/browserslist/browserslist#best-practices] for a how-to on autoprefixer parameters.
+Check [this](https://github.com/browserslist/browserslist#best-practices) for a how-to on autoprefixer parameters.
 
 ## Example
 less/styles.less
