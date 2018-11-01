@@ -4,30 +4,35 @@ less     = require 'less'
 mkdirp   = require 'mkdirp'
 path     = require 'path'
 readline = require 'readline'
+{CompositeDisposable} = require 'atom'
+LessPluginAutoPrefix = require('less-plugin-autoprefix')
 
 module.exports =
 class LessAutocompileView
   constructor: (serializeState) ->
-    atom.commands.add 'atom-workspace', 'core:save': => @handleSave()
+    @subscriptions = new CompositeDisposable
+    @subscriptions.add atom.workspace.observeTextEditors((editor) =>
+      filePath = editor.getURI()
+      fileExt = path.extname filePath
+      if fileExt is '.less'
+        editorSubscriptions = new CompositeDisposable
+        editorSubscriptions.add editor.onDidSave( =>
+          @handleSave filePath
+        )
+        editorSubscriptions.add editor.onDidDestroy( =>
+          editorSubscriptions.dispose()
+          @subscriptions.remove editorSubscriptions
+        )
+        @subscriptions.add editorSubscriptions
+    )
 
   serialize: ->
 
   destroy: ->
 
-  getExtension : (filePath) ->
-    if filePath
-      return path.extname(filePath).substr(1)
-
-  handleSave: ->
-    @activeEditor = atom.workspace.getActiveTextEditor()
-
-    if @activeEditor
-      @filePath = @activeEditor.getURI()
-      @fileExt = @getExtension(@filePath)
-
-      if @fileExt == 'less'
-        @getParams @filePath, (params) =>
-          @compileLess params
+  handleSave: (filePath) ->
+    @getParams filePath, (params) =>
+      @compileLess params
 
   writeFiles: (output, newPath, newFile) ->
     async.series
@@ -68,6 +73,10 @@ class LessAutocompileView
   compileLess: (params) ->
     return if !params.out
 
+    autoprefixPlugin = ''
+    if params.autoprefixer
+      autoprefixPlugin = new LessPluginAutoPrefix({browsers: [params.autoprefixer]})
+
     firstLine = true
     contentFile = []
     optionsLess =
@@ -75,6 +84,7 @@ class LessAutocompileView
       filename: path.basename params.file
       compress: if params.compress == 'true' then true else false
       sourceMap: if params.sourcemap == 'true' then {} else false
+      plugins: if autoprefixPlugin != '' then [autoprefixPlugin] else []
 
     rl = readline.createInterface
       input: fs.createReadStream params.file
@@ -91,6 +101,9 @@ class LessAutocompileView
 
   renderLess: (params, contentFile, optionsLess) ->
     contentFile = contentFile.join "\n"
+
+
+
 
     less.render contentFile, optionsLess
       .then (output) =>
