@@ -1,9 +1,9 @@
 {
-  "name": "autocompile-less",
+  "name": "less-compile-on-save",
   "main": "./lib/less-autocompile",
-  "version": "1.0.1",
-  "description": "Automatically compile LESS files on save",
-  "repository": "https://github.com/sagarpanchal/autocompile-less",
+  "version": "1.1.2",
+  "description": "Automatically compile LESS files on save with autoprefixer support",
+  "repository": "https://github.com/ShtHappens796/less-compile-on-save",
   "license": "MIT",
   "engines": {
     "atom": ">=1.23.0 <2.0.0"
