@@ -1,11 +1,12 @@
-# autocompile-less
+# less-compile-on-save
 
-Compile LESS file on save.
+Automatically compile LESS files on save.
+<br>
+Waits for the save to complete and then compiles the LESS file with the given options into the specified output.
 
 ---
 
-Add the parameters on the first line of the LESS file.
-
+The following parameters can be set:
 ```
 out          (string) path of CSS file to create
 sourcemap    (bool)   create sourcemap file
@@ -13,22 +14,16 @@ compress     (bool)   compress CSS file
 main         (string) path to your main LESS file to be compiled
 autoprefixer (string) autoprefixer parameterers
 ```
+Add the parameters on the first line of the LESS file.
+<br>
 Check [this](https://github.com/browserslist/browserslist#best-practices) for a how-to on autoprefixer parameters.
 
+---
+
+
+
 ## Example
-less/styles.less
+/less/style.less
 ```scss
-// out: ../css/styles.css, sourcemap: true, compress: true, autoprefixer: defaults
-
-@import "my/components/select.less";
-```
-
-less/my/components/select.less
-```scss
-// main: ../../styles.less
-
-.select {
-  height: 100px;
-  width: 100px;
-}
+// out: ../css/style.css, sourcemap: true, compress: true, autoprefixer: defaults
 ```
